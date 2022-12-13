@@ -1,7 +1,10 @@
 import React from "react";
 import "./Sidebar.css";
 import { IconButton, Avatar } from "@material-ui/core";
-import { SearchOutlined,ChatIcon, DonutLargeIcon, MoreVertIcon} from "@mui/icons-material";
+import { SearchOutlined} from "@mui/icons-material";
+import ChatIcon from '@mui/icons-material/Chat';
+import DonutLargeIcon from '@mui/icons-material/DonutLarge';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import SidebarChat from "./SidebarChat";
 
 const Sidebar = () => {

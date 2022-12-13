@@ -4,9 +4,9 @@ import {
   AttachFile,
   InsertEmoticon,
   MoreVert,
-  SearchOutlined,
-  MicIcon
+  SearchOutlined
 } from "@mui/icons-material";
+import MicIcon from '@mui/icons-material/Mic';
 import "./Chat.css";
 import axios from "./axios";
 
@@ -18,7 +18,7 @@ const Chat = ({ messages }) => {
 
     await axios.post("/messages/new", {
       message: input,
-      name: "Gopal",
+      name: "test user",
       timestamp: "Just now",
       received: true,
     });
