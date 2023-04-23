@@ -1,5 +1,5 @@
 import React from "react";
-import "./Sidebar.css";
+import "../styles/Sidebar.css";
 import { IconButton, Avatar } from "@material-ui/core";
 import { SearchOutlined} from "@mui/icons-material";
 import ChatIcon from '@mui/icons-material/Chat';

@@ -1,12 +1,15 @@
-import React, { useEffect, useState } from "react";
-import "./App.css";
+import React, { useEffect, useState, useContext } from "react";
+import "../styles/App.css";
 import Sidebar from "./Sidebar";
 import Chat from "./Chat";
 import Pusher from "pusher-js";
 import axios from "./axios";
+import { Context } from "../context/Context";
 
 function App() {
   const [messages, setMessages] = useState([]);
+  //const [state, dispatch] = useContext(Context);
+
 
   useEffect(() => {
     axios.get("/messages/sync").then((response) => {
@@ -35,8 +38,8 @@ function App() {
   return (
     <div className="app">
       <div className="app__body">
-        <Sidebar />
         <Chat messages={messages} />
+        <Sidebar />
       </div>
     </div>
   );

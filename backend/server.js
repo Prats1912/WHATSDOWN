@@ -1,9 +1,15 @@
 // importing
-import express from "express";
-import mongoose from "mongoose";
-import Messages from "./dbMessages.js";
-import Pusher from "pusher";
 import cors from "cors";
+import express from "express";
+import rateLimiter from "express-rate-limit";
+import mongoose from "mongoose";
+import Pusher from "pusher";
+import Messages from "./models/Message.js";
+import helmet from "helmet";
+import hpp from "hpp";
+import xss from "xss";
+import mongoSanitize  from "express-mongo-sanitize";
+import routes from "./routes/route.js";
 
 //app config
 const app = express();
@@ -17,13 +23,25 @@ const pusher = new Pusher({
     useTLS: true
   });
 
+// Rate Limiter  -
+const limiter = rateLimiter ({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+});  
+
 // middleware
 app.use(express.json());
 app.use(cors());
+app.use(limiter); // limiting as we are using free service to host this. 
+//app.use(xss()); // santize body, params, url
+app.use(hpp()); // To prevent HTTP parameter pollution attack
+app.use(helmet()); // To secure from setting various HTTP headers
+app.use(mongoSanitize());
 
 // DB config
 const connection_url =  "mongodb+srv://admin:KOiVeT28CYD5pdvO@atlascluster.8bnisep.mongodb.net/testdb?retryWrites=true&w=majority";
 
+//MongoDb connection
 try {
   mongoose.connect(connection_url, {
     useNewUrlParser: true,
@@ -41,50 +59,35 @@ const db = mongoose.connection;
 db.once("open", () => {
   console.log("DB connected");
 
-  const msgCollection = db.collection("chats");
-  const changeStream = msgCollection.watch();
+  const chatsCollection = db.collection("message");
+  const changeStream = chatsCollection.watch();
 
   changeStream.on("change", (change) => {
     console.log("A change occured", change);
 
     if (change.operationType === "insert") {
       const messageDetails = change.fullDocument;
-      pusher.trigger("message", "inserted", {
-        name: messageDetails.name,
-        message: messageDetails.message,
-        timestamp: messageDetails.timestamp,
-        received: messageDetails.received,
-      });
+      pusher.trigger("message", "inserted", messageDetails);
     } else {
       console.log("Error triggering Pusher");
     }
+
+    // Update chats
+    if (change.operationType === "update") {
+      const messageDetails = change;
+      pusher.trigger("messages", "updated", {
+        _id: messageDetails.documentKey._id,
+        messages: messageDetails.updateDescription.updatedFields.chats
+      });
+    } else {
+      console.log("error triggering pusher");
+    }
+
   });
 });
 
 // api routes
-app.get("/", (req, res) => res.status(200).send("hello world! this is CHatApp backend"));
-
-app.get("/messages/sync", (req, res) => {
-  //console.log("sync request recieved");
-  Messages.find((err, data) => {
-    if (err) {
-      res.status(500).send(err);
-    } else {
-      res.status(200).send(data);
-    }
-  });
-});
-
-app.post("/messages/new", (req, res) => {
-  const dbMessage = req.body;
-  Messages.create(dbMessage, (err, data) => {
-    if (err) {
-      res.status(500).send(err);
-    } else {
-      res.status(201).send(data);
-    }
-  });
-});
+app.use("/", routes)
 
 // listen
 app.listen(port, () => console.log(`Listening on localhost:${port}`));

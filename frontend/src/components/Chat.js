@@ -7,7 +7,7 @@ import {
   SearchOutlined
 } from "@mui/icons-material";
 import MicIcon from '@mui/icons-material/Mic';
-import "./Chat.css";
+import "../styles/Chat.css";
 import axios from "./axios";
 
 const Chat = ({ messages }) => {
@@ -16,7 +16,7 @@ const Chat = ({ messages }) => {
   const sendMessage = async (e) => {
     e.preventDefault();
 
-    await axios.post("/messages/new", {
+    await axios.post(`/messages/send/`, {
       message: input,
       name: "test user",
       timestamp: "Just now",
