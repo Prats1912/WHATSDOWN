@@ -1,16 +1,3 @@
-
-    // login screen
-
-    // chat screen  - 
-      // 1 side bar   
-      //2 chat window   
-
-    //COre component
-    
-
-Screen - components -- coe components <> hooks  
-
-
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
