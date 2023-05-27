@@ -126,7 +126,7 @@ function SingleChat() {
     socket = io(
       process.env.NODE_ENV !== 'production'
         ? 'http://localhost:5000'
-        :  '' //ProductionServer
+        :  process.env.BACKEND_URL //ProductionServer
     );
     socket.emit('setup', currentUser);
     socket.on('connected', () => setSocketConnected(true));
