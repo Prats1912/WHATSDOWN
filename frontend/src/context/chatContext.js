@@ -1,7 +1,7 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useToast } from '@chakra-ui/react';
-import axios from 'axios';
 import { useUserContext } from './userContext';
+import axios from 'axios';
 
 const ChatContext = React.createContext();
 
@@ -9,17 +9,13 @@ export const ChatProvider = ({ children }) => {
   const { currentUser } = useUserContext();
   const toast = useToast();
   const [chats, setChats] = useState([]);
-  const [selectedChat, setSelectedChat] = useState();
+  const [selectedChat, setSelectedChat] = useState(null);
+  const [notification, setNotification] = useState([]);
   const [fetchFlag, setFetchFlag] = useState(false);
 
   const fetchUserChats = async () => {
     try {
-      const options = {
-        headers: {
-          Authorization: `Bearer ${currentUser.token}`,
-        },
-      };
-      const response = await axios.get('/api/chat', options);
+      const response = await axios.get('/api/chat');
       const { data } = response.data;
       setChats(data);
     } catch (error) {
@@ -35,16 +31,22 @@ export const ChatProvider = ({ children }) => {
     }
   };
 
+  useEffect(() => {
+    setSelectedChat(null);
+  }, [currentUser]);
+
   return (
     <ChatContext.Provider
       value={{
         chats,
         fetchFlag,
+        notification,
         selectedChat,
         setChats,
         setFetchFlag,
-        setSelectedChat,
         fetchUserChats,
+        setNotification,
+        setSelectedChat,
       }}
     >
       {children}

@@ -12,6 +12,8 @@ import GroupChatModal from './GroupChatModal';
 import UserBadgeItem from './UserBadgeItem';
 import SingleChat from './SingleChat';
 import UpdateGroupChatModal from './UpdateGroupChatModal';
+import ScrollableChat from './ScrollableChat';
+import PreLoader from './PreLoader';
 
 export {
   Login,
@@ -28,4 +30,6 @@ export {
   UserBadgeItem,
   SingleChat,
   UpdateGroupChatModal,
+  ScrollableChat,
+  PreLoader,
 };

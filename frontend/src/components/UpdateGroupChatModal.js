@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BsInfoLg } from 'react-icons/bs';
+import { BsThreeDots } from 'react-icons/bs';
 import { useUserContext } from '../context/userContext';
 import { getLocalStorage } from '../utils/helpers';
 import { SkeletonLoader, UserListItem, UserBadgeItem } from '.';
@@ -32,17 +32,16 @@ axios.defaults.headers.common['Authorization'] = `Bearer ${getLocalStorage(
   'token'
 )}`;
 
-function UpdateGroupChatModal() {
+function UpdateGroupChatModal({ fetchMessages }) {
   const { currentUser } = useUserContext();
-  const { selectedChat, setChats, setSelectedChat, fetchFlag, setFetchFlag } =
-    useChatContext();
+  const { selectedChat, setSelectedChat, setFetchFlag } = useChatContext();
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [groupChatName, setGroupChatName] = useState(selectedChat.chatName);
-  const [selectedUsers, setSelectedUsers] = useState([]);
   const [searchText, setSearchText] = useState('');
   const [searchResult, setSearchResult] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [leaveLoading, setLeaveLoading] = useState(false);
   const [renameLoading, setRenameLoading] = useState(false);
   const toast = useToast();
 
@@ -50,12 +49,7 @@ function UpdateGroupChatModal() {
     setSearchText(query);
     try {
       setLoading(true);
-      const options = {
-        headers: {
-          Authorization: `Bearer ${currentUser.token}`,
-        },
-      };
-      const response = await axios.get(`/api/user?search=${query}`, options);
+      const response = await axios.get(`/api/user?search=${query}`);
       const { data } = response.data;
       setLoading(false);
       setSearchResult(data);
@@ -99,13 +93,8 @@ function UpdateGroupChatModal() {
         chatId: selectedChat._id,
         userId: userToBeAdded._id,
       };
-      const options = {
-        headers: {
-          Authorization: `Bearer ${currentUser.token}`,
-        },
-      };
       setLoading(true);
-      const response = await axios.post('/api/chat/groupadd', body, options);
+      const response = await axios.post('/api/chat/groupadd', body);
       const { data } = response.data;
       setSelectedChat(data);
       setFetchFlag((prev) => {
@@ -143,18 +132,14 @@ function UpdateGroupChatModal() {
         chatId: selectedChat._id,
         userId: userToBeRemoved._id,
       };
-      const options = {
-        headers: {
-          Authorization: `Bearer ${currentUser.token}`,
-        },
-      };
       setLoading(true);
-      const response = await axios.post('/api/chat/groupremove', body, options);
+      const response = await axios.post('/api/chat/groupremove', body);
       const { data } = response.data;
       setSelectedChat(data);
       setFetchFlag((prev) => {
         return !prev;
       });
+      fetchMessages();
       setLoading(false);
     } catch (error) {
       const { message } = error.response.data;
@@ -171,6 +156,16 @@ function UpdateGroupChatModal() {
   };
 
   const handleRename = async () => {
+    if (selectedChat.groupAdmin._id !== currentUser.id) {
+      return toast({
+        position: 'top',
+        title: 'Warning',
+        description: 'Only admin can rename group',
+        status: 'warning',
+        duration: 5000,
+        isClosable: true,
+      });
+    }
     if (!groupChatName) {
       return toast({
         position: 'top',
@@ -186,13 +181,8 @@ function UpdateGroupChatModal() {
         chatId: selectedChat._id,
         chatName: groupChatName,
       };
-      const options = {
-        headers: {
-          Authorization: `Bearer ${currentUser.token}`,
-        },
-      };
       setRenameLoading(true);
-      const response = await axios.post('/api/chat/grouprename', body, options);
+      const response = await axios.post('/api/chat/grouprename', body);
       const { data } = response.data;
       setSelectedChat(data);
       setFetchFlag((prev) => {
@@ -222,16 +212,48 @@ function UpdateGroupChatModal() {
   };
 
   const handleSubmit = async () => {
-    await handleRemove(currentUser);
-    onClose();
+    try {
+      setLeaveLoading(true);
+      const body = {
+        chatId: selectedChat._id,
+        userId: currentUser.id,
+      };
+      setLeaveLoading(true);
+      const response = await axios.post('/api/chat/groupremove', body);
+      const { data } = response.data;
+      setFetchFlag((prev) => {
+        return !prev;
+      });
+      setLeaveLoading(false);
+      toast({
+        position: 'top',
+        title: 'Success',
+        description: `You left ${data.chatName}`,
+        status: 'success',
+        duration: 5000,
+        isClosable: true,
+      });
+      setSelectedChat(null);
+    } catch (error) {
+      const { message } = error.response.data;
+      setLeaveLoading(false);
+      return toast({
+        position: 'top',
+        title: 'Error occured',
+        description: message,
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    }
   };
 
   return (
     <>
       <IconButton
-        icon={<BsInfoLg />}
-        colorScheme='green'
-        variant='outline'
+        icon={<BsThreeDots />}
+        colorScheme='gray'
+        variant='ghost'
         onClick={onOpen}
       />
       <Modal isOpen={isOpen} onClose={onClose}>
@@ -261,7 +283,7 @@ function UpdateGroupChatModal() {
                 </HStack>
               </FormControl>
               <FormControl>
-                <FormLabel>Group users</FormLabel>
+                <FormLabel>Search users</FormLabel>
                 <Input
                   placeholder='Search users'
                   variant='filled'
@@ -269,7 +291,7 @@ function UpdateGroupChatModal() {
                   value={searchText}
                   onChange={(e) => handleSearch(e.target.value)}
                 />
-                <FormHelperText>Eg: Varun, Tarun</FormHelperText>
+                <FormHelperText>Eg: Prakash</FormHelperText>
               </FormControl>
               <Flex w='100%' flexWrap='wrap' justifyContent='flex-start'>
                 {selectedChat.users.map((user, index) => {
@@ -304,7 +326,11 @@ function UpdateGroupChatModal() {
             )}
           </ModalBody>
           <ModalFooter>
-            <Button colorScheme='red' onClick={() => handleRemove(currentUser)}>
+            <Button
+              isLoading={leaveLoading}
+              colorScheme='red'
+              onClick={handleSubmit}
+            >
               Leave group
             </Button>
           </ModalFooter>

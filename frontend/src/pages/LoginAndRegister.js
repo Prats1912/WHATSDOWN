@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import logo from '../assets/logo.png';
-import { Login, Register } from '../components';
+import { Login, PreLoader, Register } from '../components';
+import { useUserContext } from '../context/userContext';
 import {
   Box,
   Container,
@@ -14,6 +15,16 @@ import {
 } from '@chakra-ui/react';
 
 function Homepage() {
+  const { authLoading } = useUserContext();
+
+  useEffect(() => {
+    document.title = 'ChatApp | Login/Register';
+  }, []);
+
+  if (authLoading) {
+    return <PreLoader />;
+  }
+
   return (
     <Container maxWidth='xl' mb='8'>
       <Flex justifyContent='center'>

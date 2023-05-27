@@ -43,12 +43,7 @@ function GroupChatModal() {
     setSearchText(query);
     try {
       setLoading(true);
-      const options = {
-        headers: {
-          Authorization: `Bearer ${currentUser.token}`,
-        },
-      };
-      const response = await axios(`/api/user?search=${query}`, options);
+      const response = await axios(`/api/user?search=${query}`);
       const { data } = response.data;
       setLoading(false);
       setSearchResult(data);
@@ -102,19 +97,10 @@ function GroupChatModal() {
       });
     }
     try {
-      const options = {
-        headers: {
-          Authorization: `Bearer ${currentUser.token}`,
-        },
-      };
-      const response = await axios.post(
-        '/api/chat/group',
-        {
-          name: groupChatName,
-          users: selectedUsers.map((user) => user._id),
-        },
-        options
-      );
+      const response = await axios.post('/api/chat/group', {
+        name: groupChatName,
+        users: selectedUsers.map((user) => user._id),
+      });
       const { data } = response.data;
       setChats((prev) => {
         return [data, ...prev];
@@ -144,7 +130,12 @@ function GroupChatModal() {
 
   return (
     <>
-      <IconButton icon={<AiOutlinePlus />} onClick={onOpen} />
+      <IconButton
+        icon={<AiOutlinePlus />}
+        fontSize='2xl'
+        color='gray.500'
+        onClick={onOpen}
+      />
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
@@ -163,7 +154,7 @@ function GroupChatModal() {
                 />
               </FormControl>
               <FormControl>
-                <FormLabel>Group name</FormLabel>
+                <FormLabel>Search users</FormLabel>
                 <Input
                   placeholder='Search users'
                   variant='filled'
@@ -171,7 +162,7 @@ function GroupChatModal() {
                   value={searchText}
                   onChange={(e) => handleSearch(e.target.value)}
                 />
-                <FormHelperText>Eg: Varun, Tarun</FormHelperText>
+                <FormHelperText>Eg: Prakash</FormHelperText>
               </FormControl>
               <Flex w='100%' flexWrap='wrap' justifyContent='flex-start'>
                 {selectedUsers.map((user, index) => {
