@@ -17,6 +17,10 @@ Please note :
     User profile management - Name and Image
     Group chat functionality
 
+
+![image](https://github.com/prakashp282/ChatApp/assets/41587867/1f2c4b08-06c8-402b-ba48-9027bd71e33d)
+![image](https://github.com/prakashp282/ChatApp/assets/41587867/f72f57a7-542c-4bb8-8df5-c0d5978a5de8)
+
 ## Tools & Technologies 
 
 ### Frontend
