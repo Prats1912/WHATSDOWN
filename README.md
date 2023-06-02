@@ -44,10 +44,3 @@ Please note :
     Start conversations by selecting a contact from the sidebar.
     Send messages by typing in the message input field and pressing Enter or clicking the send button.
     View received messages in real-time and receive push notifications for new messages.
-
-
-Backend services and real-time database
-React - JavaScript library for building user interfaces
-Node.js - JavaScript runtime environment
-Material-UI - UI components library
-Socket.IO - Real-time bidirectional event-based communication
